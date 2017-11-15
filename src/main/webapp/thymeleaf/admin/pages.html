@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <div th:replace="/fragments/cms-header :: cms-header-top"/>
+</head>
+
+<body>
+
+<!-- Preloader-->
+<div th:replace="/fragments/cms-body :: cms-body-preload"/>
+
+<section>
+  
+  <!--  left panel -->
+  <div th:replace="/fragments/cms-body :: cms-body-left"/>
+  
+  <div class="mainpanel">
+    <!-- cms-body-headerbar-->
+    <div th:replace="/fragments/cms-body :: cms-body-headerbar"/>
+    
+    
+    <div class="pageheader">
+      <h2><i class="fa fa-users"></i> Pages </h2>
+      <div class="breadcrumb-wrapper">
+        <span class="label">You are here:</span>
+        <ol class="breadcrumb">
+          <li class="active">Pages</li>
+        </ol>
+      </div>
+    </div>
+    
+    <!-- contentpanel -->
+	<div class="contentpanel cs_df">
+		<div class="panel-body">   
+			<!-- table-responsive -->
+			<div class="table-responsive">
+				<table id="datatable1" cellpadding="0" cellspacing="0" border="0" class="datatable table table-striped table-bordered" width="100%">
+					<thead>
+						<tr>
+							<th>No</th>
+							<th>Title</th>
+							<th>Type</th>
+							<th>Breadcrumb</th>
+							<th>Code</th>
+							<th>Order</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<!-- end table-responsive -->
+		</div>
+    </div>
+	<!-- end contentpanel -->
+    
+	<!-- Notification -->
+	<div class="modal fade" id="modalNotification" tabindex="-1" role="dialog" aria-labelledby="modalDialogLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div id="notification"></div>
+		</div>
+	</div>
+	<!-- End Notification -->
+	
+  </div><!-- mainpanel -->
+  
+  <div class="rightpanel">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs nav-justified">
+        <li class="active"><a href="#rp-alluser" data-toggle="tab"><i class="fa fa-users"></i> &nbsp;Support Center</a></li>
+    </ul>
+        
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane active" id="rp-alluser">
+      </div>  
+        <!-- tab-pane -->
+        
+    </div><!-- tab-content -->
+  </div><!-- rightpanel -->
+  
+  
+</section>
+
+<script src="/cms/js/jquery-1.10.2.min.js"></script>
+<script src="/cms/js/jquery-migrate-1.2.1.min.js"></script>
+<script src="/cms/js/jquery-ui-1.10.3.min.js"></script>
+<script src="/cms/js/bootstrap.min.js"></script>
+<script src="/cms/js/modernizr.min.js"></script>
+<!--<script src="/cms/js/jquery.sparkline.min.js"></script>-->
+<script src="/cms/js/toggles.min.js"></script>
+<!--<script src="/cms/js/retina.min.js"></script>-->
+<script src="/cms/js/jquery.cookies.min.js"></script>
+<!--<script src="/cms/js/flot/flot.min.js"></script>-->
+<!--<script src="/cms/js/flot/flot.resize.min.js"></script>-->
+<!--<script src="/cms/js/morris.min.js"></script>-->
+<script src="/cms/js/raphael-2.1.0.min.js"></script>
+<script src="/cms/js/jquery.datatables.min.js"></script>
+<!--<script src="/cms/js/chosen.jquery.min.js"></script>-->
+<!--<script src="/cms/js/jquery.validate.min.js"></script>-->
+<!--<script src="/cms/js/wysihtml5-0.3.0.min.js"></script>-->
+<!--<script src="/cms/js/bootstrap-wysihtml5.js"></script>-->
+<!--<script src="/cms/js/ckeditor/ckeditor.js"></script>-->
+<!--<script src="/cms/js/jquery.autogrow-textarea.js"></script>-->
+<!--<script src="/cms/js/bootstrap-fileupload.min.js"></script>-->
+<!--<script src="/cms/js/bootstrap-timepicker.min.js"></script>-->
+<!--<script src="/cms/js/jquery.maskedinput.min.js"></script>-->
+<!--<script src="/cms/js/jquery.tagsinput.min.js"></script>-->
+<script src="/cms/js/jquery.mousewheel.min.js"></script>
+<!--<script src="/cms/js/chosen.jquery.min.js"></script>-->
+<!--<script src="/cms/js/dropzone.min.js"></script>-->
+<!--<script src="/cms/js/colorpicker.js"></script>-->
+<!--<script src="/cms/js/jquery.fancybox.js"></script>-->
+<!--<script src="/cms/js/masonry.pkgd.min.js"></script>-->
+<script src="/cms/js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="/cms/js/notification.min.js"></script>
+<script src="/cms/js/pages.min.js"></script>
+<script src="/cms/js/custom.min.js"></script>
+
+</body>
+</html>
