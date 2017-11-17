@@ -249,6 +249,12 @@ jQuery(document).ready(function() {
    }
    
    // Modules
+   if(typeof Login !== 'undefined') {
+	   var url = window.location.pathname;
+	   var isLogin = url.indexOf('login') > 0;
+	   Login.initialize(isLogin);
+   }
+   
    if(typeof Pages !== 'undefined') {
 	   var url = window.location.pathname;
 	   var isAddEditPage = url.indexOf('addpage') > 0;

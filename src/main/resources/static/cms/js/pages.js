@@ -5,28 +5,36 @@ var Pages = function() {
 	
 	return {
 		initialize : function(isAddEditPage) {
-			if(isAddEditPage) {
-				var id = Pages.getUrlParameter('id') === '' ? '' : Pages.getUrlParameter('id');
-				if(id !== '') {
-					this.detailPages(id);
+			var _this = this;
+			Login.auth(function() {
+				Login.initialize(false);
+				if(isAddEditPage) {
+					$('.contentpanel').load('/admin/addpage-content-panel', function() {
+						var id = Pages.getUrlParameter('id') === '' ? '' : Pages.getUrlParameter('id');
+						if(id !== '') {
+							_this.detailPages(id);
+						}
+						$('.chosen-select').chosen({ width: '100%' });
+						$('textarea').wysihtml5({
+						   'stylesheets': []
+						});
+						$('textarea').autogrow();
+						$('#header-image-image').css('display', 'none');
+						$('.icon-preview').css('display', 'none');
+						$('#icon-image').attr('src', '');
+						$('#orders').spinner({ min: 1, max: 1000 });
+						$('#formvalidate').validate({
+							submitHandler: function(form) {
+								Pages.saveOrUpdate(form);
+							}
+						});
+					});
+				} else {
+					$('.contentpanel').load('/admin/pages-content-panel', function() {
+						_this.loadPages();
+					});
 				}
-				$('.chosen-select').chosen({ width: '100%' });
-				$('textarea').wysihtml5({
-				   'stylesheets': []
-				});
-				$('textarea').autogrow();
-				$('#header-image-image').css('display', 'none');
-				$('.icon-preview').css('display', 'none');
-				$('#icon-image').attr('src', '');
-				$('#orders').spinner({ min: 1, max: 1000 });
-				$('#formvalidate').validate({
-					submitHandler: function(form) {
-						Pages.saveOrUpdate(form);
-					}
-				});
-			} else {
-				this.loadPages();
-			}
+			});
 		},
 		loadPages : function() {
 			if($('#datatable1').length) {
@@ -99,13 +107,14 @@ var Pages = function() {
 			}
 			
 			//finally, make the request
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'data' : restParams,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					data.iTotalRecords = data.page.size;
@@ -116,6 +125,11 @@ var Pages = function() {
 					});
 
 					fnCallback(data);
+				},
+				'error' : function(data) {
+					if(data.status == 401) {
+						Login.logout();
+					}
 				}
 			});
 		},
@@ -136,6 +150,7 @@ var Pages = function() {
 				$('label[for="icon"]').html('Accepted formats are only jpg, jpeg and png');
 				$('label[for="icon"]').css('display', 'block');
 			} else {
+				var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 				this.readImage(headerImage.files, function(result) {
 					if(typeof result !== 'undefined') {
 						data.headerImagePath = result.replace(/^data:image\/[a-z]+;base64,/, "");
@@ -154,14 +169,17 @@ var Pages = function() {
 							'url' : url,
 							'data' : data,
 							'beforeSend' : function (xhr){ 
-								xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+								xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 							},
 							'success' : function(data) {
 								Notification.show('success', 'Page saved successfully', function(){
 									window.location.replace('/admin/pages');
 								});
 							},
-							'error' : function() {
+							'error' : function() {				
+								if(data.status == 401) {
+									Login.logout();
+								}
 								Notification.show('danger', 'Failed to save page');
 							}
 						});
@@ -170,13 +188,14 @@ var Pages = function() {
 			}
 		},
 		detailPages : function(id) {
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			var url = '/api/pages/'+ id;
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					var hrefs = data._links.self.href.split('/');
@@ -194,7 +213,6 @@ var Pages = function() {
 					$('#code').val(data.code);
 					$('#button-text').val(data.buttonText);
 					$('#orders').val(data.orders);
-					console.log(data.headerImagePath);
 					if(data.headerImagePath != null && data.headerImagePath !== '') {
 						$('#header-image-image').attr('src', '/public/images?path='+ data.headerImagePath);
 						$('#header-image-image').css('display', 'block');
@@ -215,11 +233,17 @@ var Pages = function() {
 					}
 					$('#active').val(data.active ? 'true' : 'false');
 					$('#active').trigger('chosen:updated');
+				},
+				'error' : function(data) {
+					if(data.status == 401) {
+						Login.logout();
+					}
 				}
 			});
 		},
 		deletePages : function(id) {
 			var _this = this;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			var url = '/api/pagescustom/'+ id;
 			$.ajax({
 				'dataType' : 'json',
@@ -227,13 +251,16 @@ var Pages = function() {
 				'type' : 'DELETE',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					Notification.show('success', 'Page deleted successfully');
 					_this.loadPages();
 				},
 				'error' : function() {
+					if(data.status == 401) {
+						Login.logout();
+					}
 					Notification.show('danger', 'Failed to delete page');
 				}
 			});
