@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import java.security.Principal;
 import com.fwd.domain.User;
 import com.fwd.repository.UserRepository;
 import com.fwd.service.UserService;
@@ -37,6 +37,29 @@ public class UserCustomController {
     
     @Autowired
     PasswordEncoder passwordEncoder;
+    
+    @RequestMapping(value = "/usercustom/view", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<?> viewUser(Principal principal) {
+        String username = principal.getName();
+        User user = userService.findActiveUserByUsername(username);
+        user.setPassword("");
+        user.setIdUser(Long.parseLong("0"));
+        ResponseEntity<?> entity = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        Map<String, Object> resp = new HashMap();
+        try {
+            resp.put(RF.RESULTS, user);
+            resp.put(RF.RESPONSE_CODE, RC.SUCCESS);
+            resp.put(RF.RESPONSE_MESSAGE, RC.SUCCESS_DESC);
+        } catch (Exception ex) {
+            resp.put(RF.RESPONSE_CODE, RC.UNKNOWN_FAIL);
+            resp.put(RF.RESPONSE_MESSAGE, RC.UNKNOWN_FAIL_DESC);
+        }
+        entity = new ResponseEntity(resp, headers, HttpStatus.OK);
+        return entity;
+    }
 
     @RequestMapping(value = "/usercustom", method = RequestMethod.POST)
     @ResponseBody

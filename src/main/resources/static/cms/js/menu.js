@@ -6,26 +6,35 @@ var Menu = function() {
 	return {
 		initialize : function() {
 			var _this = this;
-			$('.chosen-select').chosen({ width: '100%' });
-			$('#orders').spinner({ min: 1, max: 150 });
-			$('#shortDescription').wysihtml5({
-				'stylesheets': []
+			Login.auth(function() {
+				$('.contentpanel').load('/admin/menu-content-panel', function() {
+					$('.sub-menu-menu').addClass('active');
+					$('.pageheader-h2-icon').attr('class', 'pageheader-h2-icon');
+					$('.pageheader-h2-icon').addClass('fa fa-tasks');
+					$('.pageheader-h2-text').html(' Menu');
+					$('.pageheader-module').html('Menu');
+					$('.chosen-select').chosen({ width: '100%' });
+					$('#orders').spinner({ min: 1, max: 150 });
+					$('#shortDescription').wysihtml5({
+						'stylesheets': []
+					});
+					$('#description').wysihtml5({
+						'stylesheets': []
+					});
+					$('#formvalidate').validate({
+						submitHandler: function(form) {
+							_this.saveOrUpdate(form);
+						}
+					});
+					$('#startTime').datepicker({'dateFormat':'yy-mm-dd'});
+					$('#endTime').datepicker({'dateFormat':'yy-mm-dd'});
+					$('#btn-cancel').on('click', function(evt) {
+						evt.preventDefault();
+						$('#menuModalForm').modal('hide');
+					});
+					_this.loadMenu();
+				});
 			});
-			$('#description').wysihtml5({
-				'stylesheets': []
-			});
-			$('#formvalidate').validate({
-				submitHandler: function(form) {
-					_this.saveOrUpdate(form);
-				}
-			});
-			$('#startTime').datepicker({'dateFormat':'yy-mm-dd'});
-			$('#endTime').datepicker({'dateFormat':'yy-mm-dd'});
-			$('#btn-cancel').on('click', function(evt) {
-				evt.preventDefault();
-				$('#menuModalForm').modal('hide');
-			});
-			this.loadMenu();
 		},
 		loadMenu : function() {
 			if($('#datatable1').length) {
@@ -109,13 +118,14 @@ var Menu = function() {
 			}
 			
 			//finally, make the request
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'data' : restParams,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					data.iTotalRecords = data.page.size;
@@ -126,6 +136,15 @@ var Menu = function() {
 					});
 
 					fnCallback(data);
+				},
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load menu');
+					}
 				}
 			});
 		},
@@ -143,6 +162,7 @@ var Menu = function() {
 				$('label[for="image"]').html('Accepted formats are only jpg, jpeg and png');
 				$('label[for="image"]').css('display', 'block');
 			} else {
+				var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 				this.readImage(imagePath.files, function(result) {
 					if(typeof result !== 'undefined') {
 						data.imagePath = result.replace(/^data:image\/[a-z]+;base64,/, "");
@@ -156,7 +176,7 @@ var Menu = function() {
 						'url' : url,
 						'data' : data,
 						'beforeSend' : function (xhr){ 
-							xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+							xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 						},
 						'success' : function(data) {
 							$('#menuModalForm').modal('hide');
@@ -164,8 +184,14 @@ var Menu = function() {
 								_this.loadMenu();
 							});
 						},
-						'error' : function() {
-							Notification.show('danger', 'Failed to save menu');
+						'error' : function(data) {				
+							if(data.status == 401) {
+								Notification.show('danger', 'Session timed out, please re-login...', function(){
+									Login.logout();
+								});
+							} else {
+								Notification.show('danger', 'Failed to save menu');
+							}
 						}
 					});
 				});
@@ -196,12 +222,13 @@ var Menu = function() {
 		},
 		detailMenu : function(id) {
 			var url = '/api/menus/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					var hrefs = data._links.self.href.split('/');
@@ -237,28 +264,41 @@ var Menu = function() {
 					$('#active').trigger('chosen:updated');
 					$('#menuModalForm').modal('show');
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to load menu');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load menu');
+					}
 				}
 			});
 		},
 		deleteMenu : function(id) {
 			var _this = this;
 			var url = '/api/menus/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'contentType' : 'application/json',
 				'type' : 'DELETE',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					Notification.show('success', 'Menu deleted successfully');
 					_this.loadMenu();
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to delete menu');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to delete menu');
+					}
 				}
 			});
 		},

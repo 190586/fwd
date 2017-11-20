@@ -66,7 +66,7 @@ public class TestimonialCustomController {
     
     @RequestMapping(value = "/testimonialscustom/{id}", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> editPage(@PathVariable("id") Long id, @RequestBody Testimonial request) {
+    public ResponseEntity<?> editTestimonial(@PathVariable("id") Long id, @RequestBody Testimonial request) {
         
         Testimonial page = testimonialRepository.findOne(id);
         if (page.getImageBackgroundPath() != null && !page.getImageBackgroundPath().isEmpty() && request.isImageBackgroundPathChanged()) {
@@ -117,7 +117,7 @@ public class TestimonialCustomController {
     
     @RequestMapping(value = "/testimonialscustom/{id}", method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<?> deletePage(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deleteTestimonial(@PathVariable("id") Long id) {
         
         Testimonial page = testimonialRepository.findOne(id);
         if (page.getImageBackgroundPath() != null && !page.getImageBackgroundPath().isEmpty()) {

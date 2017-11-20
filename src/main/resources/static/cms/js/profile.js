@@ -6,19 +6,28 @@ var Profile = function() {
 	return {
 		initialize : function() {
 			var _this = this;
-			$('#footerDescription').wysihtml5({
-				'stylesheets': []
+			Login.auth(function() {
+				$('.contentpanel').load('/admin/profile-content-panel', function() {
+					$('.sub-menu-profile').addClass('active');
+					$('.pageheader-h2-icon').attr('class', 'pageheader-h2-icon');
+					$('.pageheader-h2-icon').addClass('fa fa-wrench');
+					$('.pageheader-h2-text').html(' Profile');
+					$('.pageheader-module').html('Profile');
+					$('#footerDescription').wysihtml5({
+						'stylesheets': []
+					});
+					$('#formvalidate').validate({
+						submitHandler: function(form) {
+							_this.saveOrUpdate(form);
+						}
+					});
+					$('#btn-cancel').on('click', function(evt) {
+						evt.preventDefault();
+						$('#profileModalForm').modal('hide');
+					});
+					_this.loadProfile();
+				});
 			});
-			$('#formvalidate').validate({
-				submitHandler: function(form) {
-					_this.saveOrUpdate(form);
-				}
-			});
-			$('#btn-cancel').on('click', function(evt) {
-				evt.preventDefault();
-				$('#profileModalForm').modal('hide');
-			});
-			this.loadProfile();
 		},
 		loadProfile : function() {
 			if($('#datatable1').length) {
@@ -115,13 +124,14 @@ var Profile = function() {
 			}
 			
 			//finally, make the request
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'data' : restParams,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					data.iTotalRecords = data.page.size;
@@ -132,6 +142,15 @@ var Profile = function() {
 					});
 
 					fnCallback(data);
+				},
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load profile');
+					}
 				}
 			});
 		},
@@ -149,6 +168,7 @@ var Profile = function() {
 				$('label[for="image"]').html('Accepted formats are only jpg, jpeg and png');
 				$('label[for="image"]').css('display', 'block');
 			} else {
+				var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 				this.readImage(imagePath.files, function(result) {
 					if(typeof result !== 'undefined') {
 						data.logo = result.replace(/^data:image\/[a-z]+;base64,/, "");
@@ -162,7 +182,7 @@ var Profile = function() {
 						'url' : url,
 						'data' : data,
 						'beforeSend' : function (xhr){ 
-							xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+							xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 						},
 						'success' : function(data) {
 							$('#profileModalForm').modal('hide');
@@ -170,8 +190,14 @@ var Profile = function() {
 								_this.loadProfile();
 							});
 						},
-						'error' : function() {
-							Notification.show('danger', 'Failed to save profile');
+						'error' : function(data) {				
+							if(data.status == 401) {
+								Notification.show('danger', 'Session timed out, please re-login...', function(){
+									Login.logout();
+								});
+							} else {
+								Notification.show('danger', 'Failed to save profile');
+							}
 						}
 					});
 				});
@@ -200,12 +226,13 @@ var Profile = function() {
 		},
 		detailProfile : function(id) {
 			var url = '/api/profiles/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					var hrefs = data._links.self.href.split('/');
@@ -240,28 +267,41 @@ var Profile = function() {
 					$('#prime').attr('checked', data.prime);
 					$('#profileModalForm').modal('show');
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to load profile');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load profile');
+					}
 				}
 			});
 		},
 		deleteProfile : function(id) {
 			var _this = this;
 			var url = '/api/profilescustom/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'contentType' : 'application/json',
 				'type' : 'DELETE',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					Notification.show('success', 'Profile deleted successfully');
 					_this.loadProfile();
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to delete profile');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to delete profile');
+					}
 				}
 			});
 		},

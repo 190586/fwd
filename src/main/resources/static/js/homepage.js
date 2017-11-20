@@ -19,6 +19,8 @@ var Homepage = function() {
 			this.loadProduct();
 			this.loadCustomerPlace();
 			this.loadMobileMenu();
+			this.loadLeftFooter();
+			this.loadRightFooter();
 		},
 		setScrollTo : function(element, target) {
 			$(element).on('click', function(e) {
@@ -29,7 +31,7 @@ var Homepage = function() {
 		loadFirstMenu : function() {
 			$.getJSON('/home/list-menus/FIRST-MENU', function(data) {
 				$.each(data.RESULTS, function(key, val) {
-					var ref = val.dataHref === 1 ? 'data-href' : 'href';
+					var ref = val.dataHref === true ? 'data-href' : 'href';
 					var link = $(document.createElement('li')).append($(document.createElement('a')).attr(ref, val.url).html(val.title));
 					$('.first-menu').append(link);
 				});
@@ -51,7 +53,7 @@ var Homepage = function() {
 			});
 		},
 		loadMobileMenu : function() {
-			var _this = this;
+			var _this = this, username, fullname, role, avatarPath;
 			$.getJSON('/home/list-menus/MOBILE-MENU', function(data) {
 				var i = 0;
 				var ul = $(document.createElement('ul'));
@@ -65,6 +67,64 @@ var Homepage = function() {
 					i++;
 				});
 				$('#mobile-menu').append(ul);
+			});
+			if(this.checkLS()) {
+				fullname = localStorage.getItem('f');
+				avatarPath = localStorage.getItem('ava');
+			} else {
+				fullname = $.cookie('f');
+				avatarPath = $.cookie('ava');
+			}
+			if(fullname == null) {
+				$('.logged-out').show();
+				$('.logged-in').hide();
+			} else {
+				$('.logged-out').hide();
+				$('.logged-in').show();
+				$('.profile-name').html(fullname);
+				$('.profile-image').attr('src', '/public/images?path='+ avatarPath);
+				$('.mobile-menu-btn-logout').on('click', function() {
+					if(_this.checkLS()) {
+						localStorage.removeItem('t');
+						localStorage.removeItem('r');
+						localStorage.removeItem('f');
+						localStorage.removeItem('ro');
+						localStorage.removeItem('u');
+						localStorage.removeItem('ava');
+					} else {
+						$.removeCookie('t');
+						$.removeCookie('r');
+						$.removeCookie('f');
+						$.removeCookie('ro');
+						$.removeCookie('u');
+						$.removeCookie('ava');
+					}
+					window.location = '/';
+				});
+			}
+		},
+		loadLeftFooter : function() {
+			$.getJSON('/home/list-menus/FOOTER-LEFT', function(data) {
+				var i = 0;
+				$.each(data.RESULTS, function(key, val) {
+					if(i > 0) {
+						$('.footer-left').append(' | ');
+					}
+					$('.footer-left').append('<a href="'+ val.url +'">'+ val.title +'</a>');
+					i++;
+				});
+			});
+		},
+		loadRightFooter : function() {
+			$.getJSON('/home/list-menus/FOOTER-RIGHT', function(data) {
+				var i = 0;
+				$.each(data.RESULTS, function(key, val) {
+					if(i > 0) {
+						$('.footer-right').append(' | ');
+					}
+					$('.footer-right').append('<a href="'+ val.url +'">'+ val.title +'</a>');
+					i++;
+				});
 			});
 		},
 		loadMainCarouselBar : function() {
@@ -271,6 +331,7 @@ var Homepage = function() {
 				$('.socmed-facebook').attr('href', val.facebookLink);
 				$('.socmed-twitter').attr('href', val.twitterLink);
 				$('.hotline-number').html(val.hotline);
+				$('.main-logo').attr('src', '/public/images?path='+ val.logo);
 			});
 		}, 
 		readImage : function(inputFile, callback) {
@@ -284,6 +345,15 @@ var Homepage = function() {
 				reader.readAsDataURL(imageToRead);
 			} else {
 				callback();
+			}
+		},
+		checkLS: function() {
+			try {
+				localStorage.setItem('test', 'test');
+				localStorage.removeItem('test');
+				return true;
+			} catch(e) {
+				return false;
 			}
 		}
 	}

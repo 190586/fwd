@@ -6,17 +6,26 @@ var User = function() {
 	return {
 		initialize : function() {
 			var _this = this;
-			$('.chosen-select').chosen({ width: '100%' });
-			$('#formvalidate').validate({
-				submitHandler: function(form) {
-					_this.saveOrUpdate(form);
-				}
+			Login.auth(function() {
+				$('.contentpanel').load('/admin/users-content-panel', function() {
+					$('.sub-menu-user').addClass('active');
+					$('.pageheader-h2-icon').attr('class', 'pageheader-h2-icon');
+					$('.pageheader-h2-icon').addClass('fa fa-users');
+					$('.pageheader-h2-text').html(' Users');
+					$('.pageheader-module').html('Users');
+					$('.chosen-select').chosen({ width: '100%' });
+					$('#formvalidate').validate({
+						submitHandler: function(form) {
+							_this.saveOrUpdate(form);
+						}
+					});
+					$('#btn-cancel').on('click', function(evt) {
+						evt.preventDefault();
+						$('#userModalForm').modal('hide');
+					});
+					_this.loadUser();
+				});
 			});
-			$('#btn-cancel').on('click', function(evt) {
-				evt.preventDefault();
-				$('#userModalForm').modal('hide');
-			});
-			this.loadUser();
 		},
 		loadUser : function() {
 			var urlGetImage = '/public/images';
@@ -98,13 +107,14 @@ var User = function() {
 			}
 			
 			//finally, make the request
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'data' : restParams,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					data.iTotalRecords = data.page.size;
@@ -115,6 +125,15 @@ var User = function() {
 					});
 
 					fnCallback(data);
+				},
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load user');
+					}
 				}
 			});
 		},
@@ -132,6 +151,7 @@ var User = function() {
 				$('label[for="image"]').html('Accepted formats are only jpg, jpeg and png');
 				$('label[for="image"]').css('display', 'block');
 			} else {
+				var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 				this.readImage(imagePath.files, function(result) {
 					if(typeof result !== 'undefined') {
 						var strImage = result.replace(/^data:image\/[a-z]+;base64,/, "");
@@ -146,16 +166,22 @@ var User = function() {
 						'url' : url,
 						'data' : data,
 						'beforeSend' : function (xhr){ 
-							xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+							xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 						},
 						'success' : function(data) {
 							$('#userModalForm').modal('hide');
 							Notification.show('success', 'User saved successfully', function(){
 								_this.loadUser();
 							});
-						},
-						'error' : function() {
-							Notification.show('danger', 'Failed to save user');
+						},					
+						'error' : function(data) {				
+							if(data.status == 401) {
+								Notification.show('danger', 'Session timed out, please re-login...', function(){
+									Login.logout();
+								});
+							} else {
+								Notification.show('danger', 'Failed to save user');
+							}
 						}
 					});
 				});
@@ -178,12 +204,13 @@ var User = function() {
 		},
 		detailUser : function(id) {
 			var url = '/api/users/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					var hrefs = data._links.self.href.split('/');
@@ -212,28 +239,41 @@ var User = function() {
 					Notification.hide();
 					$('#userModalForm').modal('show');
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to load user');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load user');
+					}
 				}
 			});
 		},
 		deleteUser : function(id) {
 			var _this = this;
 			var url = '/api/users/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'contentType' : 'application/json',
 				'type' : 'DELETE',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					Notification.show('success', 'User deleted successfully');
 					_this.loadUser();
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to delete user');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to delete user');
+					}
 				}
 			});
 		},

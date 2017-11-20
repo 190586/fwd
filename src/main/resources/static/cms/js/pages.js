@@ -7,9 +7,13 @@ var Pages = function() {
 		initialize : function(isAddEditPage) {
 			var _this = this;
 			Login.auth(function() {
-				Login.initialize(false);
 				if(isAddEditPage) {
 					$('.contentpanel').load('/admin/addpage-content-panel', function() {
+						$('.sub-menu-pages').addClass('active');
+						$('.pageheader-h2-icon').attr('class', 'pageheader-h2-icon');
+						$('.pageheader-h2-icon').addClass('fa fa-file-text');
+						$('.pageheader-h2-text').html(' Add Page');
+						$('.pageheader-module').html('Pages');
 						var id = Pages.getUrlParameter('id') === '' ? '' : Pages.getUrlParameter('id');
 						if(id !== '') {
 							_this.detailPages(id);
@@ -31,6 +35,11 @@ var Pages = function() {
 					});
 				} else {
 					$('.contentpanel').load('/admin/pages-content-panel', function() {
+						$('.sub-menu-pages').addClass('active');
+						$('.pageheader-h2-icon').attr('class', 'pageheader-h2-icon');
+						$('.pageheader-h2-icon').addClass('fa fa-file-text');
+						$('.pageheader-h2-text').html(' Pages');
+						$('.pageheader-module').html('Pages');
 						_this.loadPages();
 					});
 				}
@@ -126,9 +135,13 @@ var Pages = function() {
 
 					fnCallback(data);
 				},
-				'error' : function(data) {
+				'error' : function(data) {				
 					if(data.status == 401) {
-						Login.logout();
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load page');
 					}
 				}
 			});
@@ -176,11 +189,14 @@ var Pages = function() {
 									window.location.replace('/admin/pages');
 								});
 							},
-							'error' : function() {				
+							'error' : function(data) {				
 								if(data.status == 401) {
-									Login.logout();
+									Notification.show('danger', 'Session timed out, please re-login...', function(){
+										Login.logout();
+									});
+								} else {
+									Notification.show('danger', 'Failed to save page');
 								}
-								Notification.show('danger', 'Failed to save page');
 							}
 						});
 					});
@@ -236,7 +252,11 @@ var Pages = function() {
 				},
 				'error' : function(data) {
 					if(data.status == 401) {
-						Login.logout();
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load page');
 					}
 				}
 			});
@@ -257,11 +277,14 @@ var Pages = function() {
 					Notification.show('success', 'Page deleted successfully');
 					_this.loadPages();
 				},
-				'error' : function() {
+				'error' : function(data) {
 					if(data.status == 401) {
-						Login.logout();
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to delete page');
 					}
-					Notification.show('danger', 'Failed to delete page');
 				}
 			});
 		},

@@ -6,20 +6,29 @@ var Testimonial = function() {
 	return {
 		initialize : function() {
 			var _this = this;
-			$('#age').spinner({ min: 1, max: 150 });
-			$('#content').wysihtml5({
-				'stylesheets': []
+			Login.auth(function() {
+				$('.contentpanel').load('/admin/testimoni-content-panel', function() {
+					$('.sub-menu-testimonial').addClass('active');
+					$('.pageheader-h2-icon').attr('class', 'pageheader-h2-icon');
+					$('.pageheader-h2-icon').addClass('fa fa-envelope-o');
+					$('.pageheader-h2-text').html(' Testimonial');
+					$('.pageheader-module').html('Testimonial');
+					$('#age').spinner({ min: 1, max: 150 });
+					$('#content').wysihtml5({
+						'stylesheets': []
+					});
+					$('#formvalidate').validate({
+						submitHandler: function(form) {
+							_this.saveOrUpdate(form);
+						}
+					});
+					$('#btn-cancel').on('click', function(evt) {
+						evt.preventDefault();
+						$('#testimonialModalForm').modal('hide');
+					});
+					_this.loadTestimonial();
+				});
 			});
-			$('#formvalidate').validate({
-				submitHandler: function(form) {
-					_this.saveOrUpdate(form);
-				}
-			});
-			$('#btn-cancel').on('click', function(evt) {
-				evt.preventDefault();
-				$('#testimonialModalForm').modal('hide');
-			});
-			this.loadTestimonial();
 		},
 		loadTestimonial : function() {
 			if($('#datatable1').length) {
@@ -100,13 +109,14 @@ var Testimonial = function() {
 			}
 			
 			//finally, make the request
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'data' : restParams,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					data.iTotalRecords = data.page.size;
@@ -117,6 +127,15 @@ var Testimonial = function() {
 					});
 
 					fnCallback(data);
+				},
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load testimonial');
+					}
 				}
 			});
 		},
@@ -135,6 +154,7 @@ var Testimonial = function() {
 				$('label[for="avatar"]').html('Accepted formats are only jpg, jpeg and png');
 				$('label[for="avatar"]').css('display', 'block');
 			} else {
+				var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 				this.readImage(imageBackground.files, function(result) {
 					if(typeof result !== 'undefined') {
 						data.imageBackgroundPath = result.replace(/^data:image\/[a-z]+;base64,/, "");
@@ -153,16 +173,23 @@ var Testimonial = function() {
 							'url' : '/api/testimonialscustom/'+ id,
 							'data' : data,
 							'beforeSend' : function (xhr){ 
-								xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+								xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 							},
 							'success' : function(data) {
 								$('#testimonialModalForm').modal('hide');
 								Notification.show('success', 'Testimonial saved successfully', function(){
 									_this.loadTestimonial();
+									_this.loadNotification();
 								});
 							},
-							'error' : function() {
-								Notification.show('danger', 'Failed to save testimonial');
+							'error' : function(data) {				
+								if(data.status == 401) {
+									Notification.show('danger', 'Session timed out, please re-login...', function(){
+										Login.logout();
+									});
+								} else {
+									Notification.show('danger', 'Failed to save testimonial');
+								}
 							}
 						});
 					});
@@ -171,12 +198,13 @@ var Testimonial = function() {
 		},
 		detailTestimonial : function(id) {
 			var url = '/api/testimonials/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'type' : 'GET',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					var hrefs = data._links.self.href.split('/');
@@ -212,28 +240,80 @@ var Testimonial = function() {
 					$('#approval').attr('checked', data.approval);
 					$('#testimonialModalForm').modal('show');
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to load testimonial');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load testimonial');
+					}
 				}
 			});
 		},
 		deleteTestimonial : function(id) {
 			var _this = this;
 			var url = '/api/testimonialscustom/'+ id;
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
 			$.ajax({
 				'dataType' : 'json',
 				'contentType' : 'application/json',
 				'type' : 'DELETE',
 				'url' : url,
 				'beforeSend' : function (xhr){ 
-					xhr.setRequestHeader('Authorization', 'Bearer ' + 'token'); 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
 				},
 				'success' : function(data) {
 					Notification.show('success', 'Testimonial deleted successfully');
 					_this.loadTestimonial();
 				},
-				'error' : function() {
-					Notification.show('danger', 'Failed to delete testimonial');
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to delete testimonial');
+					}
+				}
+			});
+		},
+		loadNotification : function() {
+			var _this = this;
+			var restParams = new Array();
+			restParams.push({ 'name' : 'q', 'value' : false});
+			var url = '/api/testimonials/search/approval';
+			var token = Login.checkLS() ? localStorage.getItem('t') : $.cookie('t');
+			$.ajax({
+				'dataType' : 'json',
+				'type' : 'GET',
+				'url' : url,
+				'data' : restParams,
+				'beforeSend' : function (xhr){ 
+					xhr.setRequestHeader('Authorization', 'Bearer ' + token); 
+				},
+				'success' : function(data) {
+					var total = data.page.totalElements, contents = '';
+					$('.header-notification-title').html('You Have '+ total +' New Testimonials');
+					if(total > 0) {
+						$('.header-notification-badge').html(total);
+						$.map(data._embedded.testimonials, function(val, i) {
+							contents += '<li class="new"><a onclick="Login.loadModule(\'testimonial\');"><span class="thumb"><img src="/public/images?path='+ val.avatarPath +'" alt="" /></span><span class="desc"><span class="name">'+ val.name +' ('+ val.age +')<span class="badge badge-success">new</span></span><span class="msg">'+ val.occupation +'</span></span></a></li>';
+						});
+						contents += '<li class="new"><a onclick="Login.loadModule(\'testimonial\');">See All New Testimonials</a></li>';
+						$('.header-notification-list').html(contents);
+					} else {
+						$('.header-notification').hide();
+					}
+				},
+				'error' : function(data) {				
+					if(data.status == 401) {
+						Notification.show('danger', 'Session timed out, please re-login...', function(){
+							Login.logout();
+						});
+					} else {
+						Notification.show('danger', 'Failed to load notification');
+					}
 				}
 			});
 		},

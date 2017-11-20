@@ -255,26 +255,4 @@ jQuery(document).ready(function() {
 	   Login.initialize(isLogin);
    }
    
-   if(typeof Pages !== 'undefined') {
-	   var url = window.location.pathname;
-	   var isAddEditPage = url.indexOf('addpage') > 0;
-	   Pages.initialize(isAddEditPage);
-   }
-   
-   if(typeof Testimonial !== 'undefined') {
-	   Testimonial.initialize();
-   }
-   
-   if(typeof Menu !== 'undefined') {
-	   Menu.initialize();
-   }
-   
-   if(typeof Profile !== 'undefined') {
-	   Profile.initialize();
-   }
-   
-   if(typeof User !== 'undefined') {
-	   User.initialize();
-   }
-   
 });
