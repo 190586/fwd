@@ -9,57 +9,57 @@ public class DefaultController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index() {
-        return "/home";
+        return "home";
     }
 
     @RequestMapping(value = "/testi-regist", method = RequestMethod.GET)
     public String testiRegist() {
-        return "/testi-regist";
+        return "testi-regist";
     }
 
     @RequestMapping(value = "/testi-submit", method = RequestMethod.GET)
     public String testiSubmit() {
-        return "/testi-submit";
+        return "testi-submit";
     }
 
     @RequestMapping(value = "/testi-thanks", method = RequestMethod.GET)
     public String testiThanks() {
-        return "/testi-thanks";
+        return "testi-thanks";
     }
 
     @RequestMapping(value = "/admin", method = RequestMethod.GET)
     public String admin() {
-        return "/admin/content";
+        return "admin/content";
     }
 
     @RequestMapping(value = "/admin/pages-content-panel", method = RequestMethod.GET)
     public String adminpagescontentpanel() {
-        return "/admin/pages-content-panel";
+        return "admin/pages-content-panel";
     }
 
     @RequestMapping(value = "/admin/addpage-content-panel", method = RequestMethod.GET)
     public String adminaddpagecontentpanel() {
-        return "/admin/addpage-content-panel";
+        return "admin/addpage-content-panel";
     }
 
     @RequestMapping(value = "/admin/users-content-panel", method = RequestMethod.GET)
     public String adminuserscontentpanel() {
-        return "/admin/users-content-panel";
+        return "admin/users-content-panel";
     }
     
     @RequestMapping(value = "/admin/testimoni-content-panel", method = RequestMethod.GET)
     public String admintestimonicontentpanel() {
-        return "/admin/testimoni-content-panel";
+        return "admin/testimoni-content-panel";
     }
 
     @RequestMapping(value = "/admin/menu-content-panel", method = RequestMethod.GET)
     public String adminmenucontentpanel() {
-        return "/admin/menu-content-panel";
+        return "admin/menu-content-panel";
     }
 
     @RequestMapping(value = "/admin/profile-content-panel", method = RequestMethod.GET)
     public String adminprofilecontentpanel() {
-        return "/admin/profile-content-panel";
+        return "admin/profile-content-panel";
     }
     
     /*
@@ -97,17 +97,17 @@ public class DefaultController {
 
     @RequestMapping(value = "/about", method = RequestMethod.GET)
     public String about() {
-        return "/about";
+        return "about";
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login() {
-        return "/login";
+        return "login";
     }
 
     @RequestMapping(value = "/403", method = RequestMethod.GET)
     public String error403() {
-        return "/error/403";
+        return "error/403";
     }
 
 }

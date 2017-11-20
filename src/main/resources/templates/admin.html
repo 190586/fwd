@@ -1,28 +1,56 @@
-<!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <div th:replace="fragments/header :: header-css"/>
+     <div th:replace="fragments/cms-header :: cms-header-top"/>
 </head>
+
 <body>
 
-<div th:replace="fragments/header :: header"/>
+<!-- Preloader-->
+<div th:replace="fragments/cms-body :: cms-body-preload"/>
 
-<div class="container">
-
-    <div class="starter-template">
-        <h1>Admin page (Spring Security protected)</h1>
-
-        <h1 th:inline="text">Hello [[${#httpServletRequest.remoteUser}]]!</h1>
-        <form th:action="@{/logout}" method="post">
-            <input type="submit" value="Sign Out"/>
-        </form>
-
+<section>
+  
+  <!--  left panel -->
+  <div th:replace="fragments/cms-body :: cms-body-left"/>
+  
+  <div class="mainpanel">
+    <!-- cms-body-headerbar-->
+    <div th:replace="fragments/cms-body :: cms-body-headerbar"/>
+    
+    <div class="pageheader">
+      <h2><i class="fa fa-home"></i> Dashboard </h2>
+      <div class="breadcrumb-wrapper">
+        <span class="label">You are here:</span>
+        <ol class="breadcrumb">
+          <li class="active">Dashboard</li>
+        </ol>
+      </div>
     </div>
-
-</div>
-<!-- /.container -->
-
-<div th:replace="fragments/footer :: footer"/>
+    
+    <div class="contentpanel"> 	
+      
+    </div><!-- contentpanel -->
+    
+  </div><!-- mainpanel -->
+  
+  <div class="rightpanel">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs nav-justified">
+        <li class="active"><a href="#rp-alluser" data-toggle="tab"><i class="fa fa-users"></i> &nbsp;Support Center</a></li>
+    </ul>
+        
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane active" id="rp-alluser">
+      </div>  
+        <!-- tab-pane -->
+        
+    </div><!-- tab-content -->
+  </div><!-- rightpanel -->
+  
+  
+</section>
 
 </body>
 </html>
